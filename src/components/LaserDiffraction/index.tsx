@@ -58,7 +58,13 @@ const LaserDiffraction = () => {
     // Calculate the locations of the diffraction rings
     // Using the formula: sin(θ) = mλ/d
     // Where θ is the angle, m is the order, λ is wavelength, d is particle size
-    const maxOrder = 5; // Number of rings to display
+    const maxOrder = 10; // Increased number of rings to display
+    
+    // Draw the central bright spot first
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+    ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+    ctx.fill();
     
     for (let m = 1; m <= maxOrder; m++) {
       // Calculate angle for this order
@@ -71,26 +77,40 @@ const LaserDiffraction = () => {
       
       // Calculate radius on the screen based on distance and angle
       // Using R = D * tan(θ) where D is distance to screen
-      const radius = distanceSI * Math.tan(theta) * 1e3; // Convert back to pixels (assuming scale)
+      const radius = distanceSI * Math.tan(theta);
       
       // Convert to screen coordinates (pixels)
-      // Scale factor to fit on canvas (adjust as needed)
-      const scaleFactor = Math.min(width, height) / 4;
+      // Higher scale factor to make rings more visible
+      // Adjust this value to make rings more visible
+      const scaleFactor = 4000; // Increased from previous value for better visibility
       const pixelRadius = radius * scaleFactor;
       
-      // Draw the ring
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-      ctx.lineWidth = 2;
-      ctx.arc(centerX, centerY, pixelRadius, 0, Math.PI * 2);
-      ctx.stroke();
+      // Only draw if the ring fits on the canvas
+      if (pixelRadius <= Math.min(width, height) / 2) {
+        // Draw the ring with increased thickness and opacity
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(255, 0, 0, 0.9)`;
+        ctx.lineWidth = 3; // Thicker lines for better visibility
+        ctx.arc(centerX, centerY, pixelRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Add ring number for reference
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = '12px Arial';
+        ctx.fillText(`m=${m}`, centerX + pixelRadius + 5, centerY);
+      }
     }
+    
+    // Add a note about the visualization scale
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = '14px Arial';
+    ctx.fillText('Note: Diffraction pattern scale has been enhanced for visibility', 20, height - 20);
   };
 
-  // Generate pattern on component mount
+  // Generate pattern on component mount and when inputs change
   useEffect(() => {
     generatePattern();
-  }, []);
+  }, [wavelength, distance, particleSize, selectedMaterial]);
 
   return (
     <div className={styles.container}>
