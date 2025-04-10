@@ -1,6 +1,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
+import { Slider } from "@/components/ui/slider";
 import styles from './LaserDiffraction.module.css';
 
 // Material data with particle sizes in micrometers
@@ -16,6 +17,7 @@ const LaserDiffraction = () => {
   const [distance, setDistance] = useState<string>('100');
   const [particleSize, setParticleSize] = useState<string>('10');
   const [selectedMaterial, setSelectedMaterial] = useState<string>('lycopodium');
+  const [zoomLevel, setZoomLevel] = useState<number[]>([1]);
 
   // Update particle size when material changes
   useEffect(() => {
@@ -66,6 +68,10 @@ const LaserDiffraction = () => {
     ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
     ctx.fill();
     
+    // Apply zoom factor to the scale
+    const baseScaleFactor = 4000; 
+    const scaleFactor = baseScaleFactor * zoomLevel[0];
+    
     for (let m = 1; m <= maxOrder; m++) {
       // Calculate angle for this order
       const sinTheta = m * wavelengthSI / particleSizeSI;
@@ -80,9 +86,7 @@ const LaserDiffraction = () => {
       const radius = distanceSI * Math.tan(theta);
       
       // Convert to screen coordinates (pixels)
-      // Higher scale factor to make rings more visible
-      // Adjust this value to make rings more visible
-      const scaleFactor = 4000; // Increased from previous value for better visibility
+      // Use zoom level to adjust visibility
       const pixelRadius = radius * scaleFactor;
       
       // Only draw if the ring fits on the canvas
@@ -100,17 +104,12 @@ const LaserDiffraction = () => {
         ctx.fillText(`m=${m}`, centerX + pixelRadius + 5, centerY);
       }
     }
-    
-    // Add a note about the visualization scale
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.font = '14px Arial';
-    ctx.fillText('Note: Diffraction pattern scale has been enhanced for visibility', 20, height - 20);
   };
 
   // Generate pattern on component mount and when inputs change
   useEffect(() => {
     generatePattern();
-  }, [wavelength, distance, particleSize, selectedMaterial]);
+  }, [wavelength, distance, particleSize, selectedMaterial, zoomLevel]);
 
   return (
     <div className={styles.container}>
@@ -170,6 +169,20 @@ const LaserDiffraction = () => {
         <button onClick={generatePattern} className={styles.button}>
           Generate Diffraction Pattern
         </button>
+      </div>
+
+      <div className={styles.zoomControls}>
+        <label className={styles.zoomLabel}>
+          Zoom: {zoomLevel[0].toFixed(1)}x
+          <Slider
+            value={zoomLevel}
+            onValueChange={setZoomLevel}
+            min={0.1}
+            max={5}
+            step={0.1}
+            className={styles.zoomSlider}
+          />
+        </label>
       </div>
 
       <div className={styles.canvasContainer}>

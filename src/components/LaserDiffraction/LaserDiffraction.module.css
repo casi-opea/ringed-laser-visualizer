@@ -24,6 +24,28 @@
   border-radius: 8px;
 }
 
+.zoomControls {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto 20px;
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.zoomLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.zoomSlider {
+  width: 100%;
+}
+
 .label {
   display: flex;
   flex-direction: column;
