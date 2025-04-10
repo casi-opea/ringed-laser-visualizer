@@ -96,6 +96,31 @@
   background-color: #45a049;
 }
 
+.screenshotControls {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.screenshotButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  border: 1px solid #ccc;
+  padding: 10px 20px;
+  transition: all 0.2s;
+}
+
+.screenshotButton:hover {
+  background-color: #f0f0f0;
+  border-color: #aaa;
+}
+
+.icon {
+  color: #555;
+}
+
 @media (max-width: 768px) {
   .controls {
     flex-direction: column;

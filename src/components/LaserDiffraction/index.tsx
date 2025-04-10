@@ -2,6 +2,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
+import { Camera } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import styles from './LaserDiffraction.module.css';
 
 // Material data with particle sizes in micrometers
@@ -13,6 +15,7 @@ const materialsData = {
 
 const LaserDiffraction = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const screenshotCanvasRef = useRef<HTMLCanvasElement>(null);
   const [wavelength, setWavelength] = useState<string>('650');
   const [distance, setDistance] = useState<string>('100');
   const [particleSize, setParticleSize] = useState<string>('10');
@@ -111,6 +114,61 @@ const LaserDiffraction = () => {
     generatePattern();
   }, [wavelength, distance, particleSize, selectedMaterial, zoomLevel]);
 
+  // Take a screenshot of the canvas with parameters
+  const takeScreenshot = () => {
+    const mainCanvas = canvasRef.current;
+    const screenshotCanvas = screenshotCanvasRef.current;
+    
+    if (!mainCanvas || !screenshotCanvas) return;
+    
+    const ctx = screenshotCanvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Set screenshot canvas dimensions
+    screenshotCanvas.width = mainCanvas.width;
+    screenshotCanvas.height = mainCanvas.height + 100; // Extra space for parameters
+    
+    // Fill background
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(0, 0, screenshotCanvas.width, screenshotCanvas.height);
+    
+    // Draw the diffraction pattern
+    ctx.drawImage(mainCanvas, 0, 0);
+    
+    // Add parameters text
+    ctx.fillStyle = '#333';
+    ctx.font = '14px Arial';
+    const padding = 10;
+    let yPos = mainCanvas.height + 20;
+    
+    // Material name with first letter capitalized
+    const materialName = selectedMaterial === 'custom' 
+      ? 'Custom' 
+      : selectedMaterial.charAt(0).toUpperCase() + selectedMaterial.slice(1);
+    
+    ctx.fillText(`Material: ${materialName}`, padding, yPos);
+    ctx.fillText(`Wavelength: ${wavelength} nm`, padding + 180, yPos);
+    yPos += 25;
+    
+    ctx.fillText(`Particle Size: ${particleSize} μm`, padding, yPos);
+    ctx.fillText(`Screen Distance: ${distance} cm`, padding + 180, yPos);
+    yPos += 25;
+    
+    ctx.fillText(`Zoom Level: ${zoomLevel[0].toFixed(1)}x`, padding, yPos);
+    
+    // Draw timestamp
+    const date = new Date();
+    const timestamp = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+    ctx.fillText(`Generated: ${timestamp}`, screenshotCanvas.width - 220, yPos);
+    
+    // Generate download link
+    const dataUrl = screenshotCanvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = `laser-diffraction-${date.getTime()}.png`;
+    link.href = dataUrl;
+    link.click();
+  };
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Laser Particle Size VLab</h1>
@@ -191,6 +249,25 @@ const LaserDiffraction = () => {
           className={styles.canvas}
           width={800}
           height={400}
+        />
+      </div>
+      
+      <div className={styles.screenshotControls}>
+        <Button 
+          onClick={takeScreenshot} 
+          variant="outline" 
+          className={styles.screenshotButton}
+        >
+          <Camera className={styles.icon} />
+          Capture Screenshot
+        </Button>
+        
+        {/* Hidden canvas for screenshot */}
+        <canvas
+          ref={screenshotCanvasRef}
+          style={{ display: 'none' }}
+          width={800}
+          height={500}
         />
       </div>
     </div>
